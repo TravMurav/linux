@@ -12,7 +12,7 @@
 
 
 /*
- * grep -nB 1 -A 5 "board-id" msm8916*
+ * grep -nB 1 -A 5 "usb" msm8916* l8150/*
  */
 
 
@@ -106,15 +106,26 @@
 	};
 };
 
+
+// https://github.com/LineageOS/android_kernel_cyanogen_msm8916/blob/lineage-16.0/arch/arm/boot/dts/qcom/msm8916-regulator.dtsi
+
+// Values from msm8916-regulator.dtsi Found using
+// grep -nB 4 -A 5 "regulator-...-microvolt" msm8916* l8150/*
+
+// init-voltage ???
+
+
 &smd_rpm_regulators {
 	vdd_l1_l2_l3-supply = <&pm8916_s3>;
 	vdd_l4_l5_l6-supply = <&pm8916_s4>;
 	vdd_l7-supply = <&pm8916_s4>;
 
-	s1 {
+	s1 { 
 		regulator-min-microvolt = <500000>;
-		regulator-max-microvolt = <1300000>;
+		regulator-max-microvolt = <1300000>; // Line 119 - corner values ???
 	};
+    
+    // s2 in line 16 ???
 
 	s3 {
 		regulator-min-microvolt = <1200000>;
@@ -123,7 +134,7 @@
 
 	s4 {
 		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
+		regulator-max-microvolt = <2100000>; // <--- line 162
 
 		regulator-always-on;
 		regulator-boot-on;
@@ -140,8 +151,8 @@
 	};
 
 	l3 {
-		regulator-min-microvolt = <500000>;
-		regulator-max-microvolt = <1287500>;
+		regulator-min-microvolt = <500000>; 
+		regulator-max-microvolt = <1287500>; // Line 189 - corner values ???
 	};
 
 	l4 {
@@ -160,7 +171,7 @@
 	};
 
 	l7 {
-		regulator-min-microvolt = <1800000>;
+		regulator-min-microvolt = <1800000>; // Line 247 - have _ao and _so ???
 		regulator-max-microvolt = <1800000>;
 	};
 
@@ -213,7 +224,7 @@
 
 	l17 {
 		regulator-min-microvolt = <2850000>;
-		regulator-max-microvolt = <3100000>;
+		regulator-max-microvolt = <2850000>; // <--- Line 365
 	};
 
 	l18 {
