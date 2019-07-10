@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-only
+￼	
+￼	/dts-v1/;
+￼	
+￼	#include "msm8916-wileyfox-crackling.dtsi"
+￼	
+￼	/ {
+￼		model = "Wileyfox Swift";
+￼		compatible = "wileyfox,crackling", "qcom,msm8916";
+
+    // Board ID ???
+
+￼	};
