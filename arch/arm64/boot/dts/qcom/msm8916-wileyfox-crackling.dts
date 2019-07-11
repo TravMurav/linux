@@ -7,4 +7,10 @@
 / {
 	model = "Wileyfox Swift";
 	compatible = "wileyfox,crackling", "qcom,msm8916";
+    
+    // msm8916.dtsi:20:        
+    qcom,msm-id = <206 0>, <248 0>, <249 0>, <250 0>;
+    // msm8916-qrd-l8150.dts:22:
+    qcom,board-id = <0x1000b 9> , <0x1010b 9> , <0x3010b 9>;
+
 };
