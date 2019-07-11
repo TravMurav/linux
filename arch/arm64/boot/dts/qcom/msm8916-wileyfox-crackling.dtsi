@@ -27,8 +27,6 @@
 
 	soc {
         
-        // msm-id, board-id ??? Where they are ???
-        
         // muic removed.
 
 		sdhci@7824000 { // Why not sdhc_1 and sdhc_2 ???
@@ -119,116 +117,172 @@
 	vdd_l1_l2_l3-supply = <&pm8916_s3>;
 	vdd_l4_l5_l6-supply = <&pm8916_s4>;
 	vdd_l7-supply = <&pm8916_s4>;
+    
+    // XX: min - default - max - default on
+    // Expected usage
+    
 
-	s1 { 
-		regulator-min-microvolt = <500000>;
-		regulator-max-microvolt = <1300000>; // Line 119 - corner values ???
+    // S1: 0v5 - 1v15 - 1v35 - Y
+    // MSM IC core (modem, gpu, ...)
+	s1 {
+		regulator-min-microvolt = <500000>;  // 0v5
+		regulator-max-microvolt = <1300000>; // 1v3   Line 119 - corner values ???
 	};
     
     // s2 in line 16 ???
+    
+    // S2: 0v9 - 1v15 - 1v35 - Y
+    // A53 application cores
 
+    // S3: 1v25 - 1v3 - 1v35 - Y
+    // Analog blocks of WAN, WLAN; Source for L1, L2, L3
 	s3 {
-		regulator-min-microvolt = <1200000>;
-		regulator-max-microvolt = <1300000>;
+		regulator-min-microvolt = <1200000>; // 1v2
+		regulator-max-microvolt = <1300000>; // 1v3
 	};
 
+    // S4: 1v85 - 2v1 - 2v15 - Y
+    // Codec analog; source for L4, L5, L6, L7
 	s4 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <2100000>; // <--- line 162
+		regulator-min-microvolt = <1800000>; // 1v8
+		regulator-max-microvolt = <2100000>; // 2v1   <--- line 162
 
 		regulator-always-on;
 		regulator-boot-on;
 	};
-
+    
+    // L1: 1v0 - 1v225 - 1v225 - N
+    // WTR low voltage rail
 	l1 {
-		regulator-min-microvolt = <1225000>;
+		regulator-min-microvolt = <1225000>; // 1v225
 		regulator-max-microvolt = <1225000>;
 	};
-
+    
+    // L2: 1v2 - 1v15 - 1v2 - Y
+    // Memory (lpDDR, eMMC, EBI); MIPI analog rails
 	l2 {
-		regulator-min-microvolt = <1200000>;
+		regulator-min-microvolt = <1200000>; // 1v2
 		regulator-max-microvolt = <1200000>;
 	};
 
+    // L3: 0v75 - 1v2 - 1v35 - Y
+    // Modem IC
 	l3 {
-		regulator-min-microvolt = <500000>; 
-		regulator-max-microvolt = <1287500>; // Line 189 - corner values ???
+		regulator-min-microvolt = <500000>;  // 0v5
+		regulator-max-microvolt = <1287500>; // 1v2875  Line 189 - corner values ???
 	};
 
+    // L4: 1v8 - 2v05 - 2v1 - N
+    // WTR, GPS eLNA
 	l4 {
-		regulator-min-microvolt = <2050000>;
+		regulator-min-microvolt = <2050000>; // 2v05
 		regulator-max-microvolt = <2050000>;
 	};
 
+    // L5: 1v8 - 1v8 - 1v8 - Y
+    // Codec and memory 1v8 rails
 	l5 {
-		regulator-min-microvolt = <1800000>;
+		regulator-min-microvolt = <1800000>; // 1v8
 		regulator-max-microvolt = <1800000>;
 	};
 
+    // L6: 1v8 - 1v8 - 1v8 - Y
+    // Camera, display, transduser 1v8 rails; HK ADC
 	l6 {
-		regulator-min-microvolt = <1800000>;
+		regulator-min-microvolt = <1800000>; // 1v8
 		regulator-max-microvolt = <1800000>;
 	};
 
+    // L7: 1v8 - 1v8 - 1v9 - Y
+    // Modem, WTR, BB_CLK driver
 	l7 {
-		regulator-min-microvolt = <1800000>; // Line 247 - have _ao and _so ???
+		regulator-min-microvolt = <1800000>; // 1v8   Line 247 - have _ao and _so ???
 		regulator-max-microvolt = <1800000>;
 	};
 
+    // L8: 2v9 - 2v9 - 2v9 - Y
+    // eMMC/NAND core
 	l8 {
-		regulator-min-microvolt = <2850000>;
-		regulator-max-microvolt = <2900000>;
+		regulator-min-microvolt = <2850000>; // 2v85
+		regulator-max-microvolt = <2900000>; // 2v9
 	};
 
+    // L9: 3v3 - 3v3 - 3v3 - N
+    // Connectivity IC (WCN36x0)
 	l9 {
-		regulator-min-microvolt = <3300000>;
+		regulator-min-microvolt = <3300000>; // 3v3
 		regulator-max-microvolt = <3300000>;
 	};
 
+    // L10: 2v8-2v7-2v8 - N
+    // Cameras analog rails
 	l10 {
-		regulator-min-microvolt = <2700000>;
-		regulator-max-microvolt = <2800000>;
+		regulator-min-microvolt = <2700000>; // 2v7
+		regulator-max-microvolt = <2800000>; // 2v8
 	};
 
+    // L11: 2v95 - 2v8 - 2v95 - Y
+    // SD/MMC card
 	l11 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <2950000>;
+		regulator-min-microvolt = <1800000>; // 1v8
+		regulator-max-microvolt = <2950000>; // 2v95
 		regulator-allow-set-load;
-		regulator-system-load = <200000>;
+		regulator-system-load = <200000>;    // 200 mA ???
 	};
 
+    // L12: 1v8 - 2v8 - 2v95 - Y
+    // MSM8x16 memory rail for SD
 	l12 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <2950000>;
+		regulator-min-microvolt = <1800000>; // 1v8
+		regulator-max-microvolt = <2950000>; // 2v95
 	};
 
+    // L13: 3v075 - 3v075 - 3v075 - Y
+    // Codec; USB 3v0 analog rails
 	l13 {
-		regulator-min-microvolt = <3075000>;
+		regulator-min-microvolt = <3075000>; // 3v075
 		regulator-max-microvolt = <3075000>;
 	};
 
+    // L14: 1v8 - 1v8 - 3v3 - N
+    // UIM 1
 	l14 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <1800000>; // 1v8
+		regulator-max-microvolt = <3300000>; // 3v3
 	};
 
+    // L15: 1v8 - 1v8 - 3v3 - N
+    // UIM 2
 	l15 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <1800000>; // 1v8
+		regulator-max-microvolt = <3300000>; // 3v3
 	};
-
+    
+    /*
+     * "Software Caution:
+     * L16 Need to Config to 1.8V and turn on later than L17"
+     * 
+     * Also it looks NC
+     */
+    
+    // L16: 1v8 - 1v8 - 3v3 - N
+    // UIM 3
 	l16 {
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <1800000>; // 1v8
+		regulator-max-microvolt = <3300000>; // 3v3
 	};
 
+    // L17: 2v85 - 2v85 - 2v85 - N
+    // LCD, transducers and camera  2v85 rails
 	l17 {
-		regulator-min-microvolt = <2850000>;
+		regulator-min-microvolt = <2850000>; // 2v85
 		regulator-max-microvolt = <2850000>; // <--- Line 365
 	};
 
+    // L18: 2v7 - 2v7 - 2v7 - N
+    // Qcom RF360
 	l18 {
-		regulator-min-microvolt = <2700000>;
+		regulator-min-microvolt = <2700000>; // 2v7
 		regulator-max-microvolt = <2700000>;
 	};
 };
