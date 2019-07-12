@@ -61,10 +61,18 @@
 			pinctrl-0 = <&blsp1_uart2_default>;
 			pinctrl-1 = <&blsp1_uart2_sleep>;
 		};
+        
+        // Random NC GPIO choosen
+        usb_id: usb-id {
+            compatible = "linux,extcon-usb-gpio";
+            vbus-gpio = <&msmgpio 62 GPIO_ACTIVE_HIGH>;
+            pinctrl-names = "default";
+            pinctrl-0 = <&usb_id_default>;
+        };
 
 		usb@78d9000 {
 			status = "okay";
-            //extcon = <&muic>;
+            extcon = <&usb_id>;
             dr_mode = "peripheral";
 
 			hnp-disable;
@@ -73,7 +81,7 @@
 
 			ulpi {
 				phy {
-					//extcon = <&muic>;
+					extcon = <&usb_id>;
 					v1p8-supply = <&pm8916_l7>;
 					v3p3-supply = <&pm8916_l13>; // L13 should give 3v0 not 3v3 ???
                                                  // But it actually connected to VDD_USBPHY_3P3 so it's ok I guess
@@ -103,6 +111,21 @@
 		etm@85d000 { status = "disabled"; };
 		etm@85e000 { status = "disabled"; };
 		etm@85f000 { status = "disabled"; };
+	};
+};
+
+
+&msmgpio {
+	usb_id_default: usb-id-default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio62";
+		};
+
+		pinconf {
+			pins = "gpio62";
+			bias-pull-up;
+		};
 	};
 };
 
