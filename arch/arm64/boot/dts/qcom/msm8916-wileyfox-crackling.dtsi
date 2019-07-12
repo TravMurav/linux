@@ -65,6 +65,7 @@
 		usb@78d9000 {
 			status = "okay";
             //extcon = <&muic>;
+            dr_mode = "peripheral";
 
 			hnp-disable;
 			srp-disable;
