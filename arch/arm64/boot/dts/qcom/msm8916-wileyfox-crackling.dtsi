@@ -29,7 +29,7 @@
         
         // muic removed.
 
-		sdhci@7824000 { // Why not sdhc_1 and sdhc_2 ???
+		sdhci@7824000 {
 			status = "okay";
 
 			vmmc-supply = <&pm8916_l8>;
@@ -74,7 +74,8 @@
 				phy {
 					//extcon = <&muic>;
 					v1p8-supply = <&pm8916_l7>;
-					v3p3-supply = <&pm8916_l13>;
+					v3p3-supply = <&pm8916_l13>; // L13 should give 3v0 not 3v3 ???
+                                                 // But it actually connected to VDD_USBPHY_3P3 so it's ok I guess
 				};
 			};
 		};
@@ -109,8 +110,6 @@
 
 // Values from msm8916-regulator.dtsi Found using
 // grep -nB 4 -A 5 "regulator-...-microvolt" msm8916* l8150/*
-
-// init-voltage ???
 
 
 &smd_rpm_regulators {
