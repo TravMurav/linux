@@ -1,0 +1,49 @@
+name: Build (aarch64)
+
+on: [push, pull_request]
+
+env:
+  ARCH: arm64
+
+jobs:
+  gcc:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install build dependencies
+      run: |
+          sudo sed -i 's/yes/no/g' /etc/initramfs-tools/update-initramfs.conf
+          sudo rm -f /var/lib/man-db/auto-update
+          echo "force-unsafe-io" | sudo tee -a /etc/dpkg/dpkg.cfg.d/force-unsafe-io
+          sudo apt-get install -yqq gcc gcc-aarch64-linux-gnu
+
+    - name: Build with gcc
+      env:
+        CROSS_COMPILE: aarch64-linux-gnu-
+      run: |
+        make msm8916_defconfig
+        echo CONFIG_WERROR=y >> .config
+        make -j$(nproc)
+
+  clang:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install build dependencies
+      run: |
+          sudo sed -i 's/yes/no/g' /etc/initramfs-tools/update-initramfs.conf
+          sudo rm -f /var/lib/man-db/auto-update
+          echo "force-unsafe-io" | sudo tee -a /etc/dpkg/dpkg.cfg.d/force-unsafe-io
+          sudo apt-get install -yqq lld llvm
+
+    - name: Build with clang
+      env:
+        LLVM: 1
+      run: |
+        make msm8916_defconfig
+        echo CONFIG_WERROR=y >> .config
+        make -j$(nproc)

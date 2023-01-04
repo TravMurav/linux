@@ -1,0 +1,14 @@
+name: Check patches
+on: [pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Run checkpatch.pl
+      run: |
+        git format-patch ${{ github.base_ref }}
+        scripts/checkpatch.pl --strict --color=always *.patch || :
+        ! scripts/checkpatch.pl --strict --color=always --terse --show-types *.patch \
+          | grep -Ff .drone-checkpatch.txt
