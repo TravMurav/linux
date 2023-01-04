@@ -27,7 +27,7 @@ check)
 	git format-patch origin/$DRONE_TARGET_BRANCH
 	scripts/checkpatch.pl --strict --color=always *.patch || :
 	! scripts/checkpatch.pl --strict --color=always --terse --show-types *.patch \
-		| grep -Ff .drone-checkpatch.txt
+		| grep -Ff ./.msm8916-ci-checkpatch.txt
 	;;
 *)
 	exit 1
