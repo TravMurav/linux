@@ -38,6 +38,7 @@ static int msm_devfreq_target(struct device *dev, unsigned long *freq,
 		gpu->funcs->gpu_set_freq(gpu, opp, df->suspended);
 		mutex_unlock(&df->lock);
 	} else {
+		pr_err("-> %s:%d", __func__, __LINE__);
 		dev_pm_opp_set_rate(dev, *freq);
 	}
 
