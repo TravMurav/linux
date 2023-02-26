@@ -327,6 +327,8 @@ struct mxt_data {
 	u16 T71_address;
 	u8 T9_reportid_min;
 	u8 T9_reportid_max;
+	u8 T15_reportid_min;
+	u8 T15_reportid_max;
 	u16 T18_address;
 	u8 T19_reportid;
 	u16 T44_address;
@@ -347,8 +349,8 @@ struct mxt_data {
 	u32 *t19_keymap;
 	unsigned int t19_num_keys;
 
-	u32 *t97_keymap;
-	unsigned int t97_num_keys;
+	u32 *t15_keymap;
+	unsigned int t15_num_keys;
 
 	enum mxt_suspend_mode suspend_mode;
 
@@ -898,18 +900,23 @@ static void mxt_proc_t9_message(struct mxt_data *data, u8 *message)
 	data->update_input = true;
 }
 
-static void mxt_proc_t97_messages(struct mxt_data *data, u8 *message)
+static void mxt_proc_t15_messages(struct mxt_data *data, u8 *message)
 {
 	struct input_dev *input_dev = data->input_dev;
 	unsigned long keystates = get_unaligned_le32(&message[2]);
 	int key;
 
-	for (key = 0; key < data->t97_num_keys; key++) {
-		input_report_key(input_dev, data->t97_keymap[key],
+	for (key = 0; key < data->t15_num_keys; key++) {
+		input_report_key(input_dev, data->t15_keymap[key],
 			!!(keystates & BIT(key)));
 	}
 
 	data->update_input = true;
+}
+
+static void mxt_proc_t97_messages(struct mxt_data *data, u8 *message)
+{
+	mxt_proc_t15_messages(data, message);
 }
 
 static void mxt_proc_t100_message(struct mxt_data *data, u8 *message)
@@ -1038,6 +1045,9 @@ static int mxt_proc_message(struct mxt_data *data, u8 *message)
 	} else if (report_id >= data->T9_reportid_min &&
 		   report_id <= data->T9_reportid_max) {
 		mxt_proc_t9_message(data, message);
+	} else if (report_id >= data->T15_reportid_min &&
+		   report_id <= data->T15_reportid_max) {
+		mxt_proc_t15_messages(data, message);
 	} else if (report_id >= data->T97_reportid_min &&
 		   report_id <= data->T97_reportid_max) {
 		mxt_proc_t97_messages(data, message);
@@ -1790,6 +1800,10 @@ static int mxt_parse_object_table(struct mxt_data *data,
 						object->num_report_ids - 1;
 			data->num_touchids = object->num_report_ids;
 			break;
+		case MXT_TOUCH_KEYARRAY_T15:
+			data->T15_reportid_min = min_id;
+			data->T15_reportid_max = max_id;
+			break;
 		case MXT_SPT_COMMSCONFIG_T18:
 			data->T18_address = object->start_address;
 			break;
@@ -2126,9 +2140,9 @@ static int mxt_initialize_input_device(struct mxt_data *data)
 	input_dev->open = mxt_input_open;
 	input_dev->close = mxt_input_close;
 
-	input_dev->keycode = data->t97_keymap;
-	input_dev->keycodemax = data->t97_num_keys;
-	input_dev->keycodesize = sizeof(data->t97_keymap[0]);
+	input_dev->keycode = data->t15_keymap;
+	input_dev->keycodemax = data->t15_num_keys;
+	input_dev->keycodesize = sizeof(data->t15_keymap[0]);
 
 	input_set_capability(input_dev, EV_KEY, BTN_TOUCH);
 
@@ -2197,10 +2211,10 @@ static int mxt_initialize_input_device(struct mxt_data *data)
 				     0, 255, 0, 0);
 	}
 
-	/* For T97 Key Array */
-	if (data->T97_reportid_min) {
-		for (i = 0; i < data->t97_num_keys; i++)
-			input_set_capability(input_dev, EV_KEY, data->t97_keymap[i]);
+	/* For T15 and T97 Key Array */
+	if (data->T15_reportid_min || data->T97_reportid_min) {
+		for (i = 0; i < data->t15_num_keys; i++)
+			input_set_capability(input_dev, EV_KEY, data->t15_keymap[i]);
 	}
 
 	input_set_drvdata(input_dev, data);
@@ -3176,8 +3190,8 @@ static int mxt_parse_device_properties(struct mxt_data *data)
 			return error;
 		}
 
-		data->t97_keymap = buttonmap;
-		data->t97_num_keys = n_keys;
+		data->t15_keymap = buttonmap;
+		data->t15_num_keys = n_keys;
 	}
 
 	return 0;
