@@ -33,7 +33,3 @@
 &gpio_leds_default {
 	pins = "gpio20", "gpio21", "gpio22";
 };
-
-&sim_ctrl_default {
-	pins = "gpio1", "gpio2";
-};
