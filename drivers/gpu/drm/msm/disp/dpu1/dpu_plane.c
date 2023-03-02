@@ -1414,7 +1414,7 @@ struct drm_plane *dpu_plane_init(struct drm_device *dev,
 	num_formats = pipe_hw->cap->sblk->num_formats;
 
 	pdpu = drmm_universal_plane_alloc(dev, struct dpu_plane, base,
-				0xff, &dpu_plane_funcs,
+				possible_crtcs, &dpu_plane_funcs,
 				format_list, num_formats,
 				supported_format_modifiers, type, NULL);
 	if (IS_ERR(pdpu))
