@@ -818,10 +818,6 @@ hp_i2c: &i2c9 {
 	};
 };
 
-&mdp {
-	status = "okay";
-};
-
 &mdss {
 	status = "okay";
 };
