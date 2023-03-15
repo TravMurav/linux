@@ -785,6 +785,14 @@ hp_i2c: &i2c9 {
 	};
 };
 
+&lpasscc {
+	status = "okay";
+};
+
+&lpass_hm {
+	status = "okay";
+};
+
 &lpass_cpu {
 	status = "okay";
 
