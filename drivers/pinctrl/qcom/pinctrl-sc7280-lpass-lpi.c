@@ -129,6 +129,10 @@ static const struct lpi_pinctrl_variant_data sc7280_lpi_data = {
 
 static const struct of_device_id lpi_pinctrl_of_match[] = {
 	{
+	       .compatible = "qcom,sc7180-lpass-lpi-pinctrl",
+	       .data = &sc7280_lpi_data,
+	},
+	{
 	       .compatible = "qcom,sc7280-lpass-lpi-pinctrl",
 	       .data = &sc7280_lpi_data,
 	},
