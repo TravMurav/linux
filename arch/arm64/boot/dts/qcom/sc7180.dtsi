@@ -3967,6 +3967,73 @@
 			};
 		};
 
+		lpass_tlmm: pinctrl@627c0000 {
+			compatible = "qcom,sc7180-lpass-lpi-pinctrl";
+			reg = <0 0x627c0000 0x0 0x20000>,
+			      <0 0x62950000 0x0 0x10000>;
+
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&lpass_tlmm 0 0 15>;
+
+			clocks = <&q6afecc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			clock-names = "core",
+				      "audio";
+
+			status = "disabled";
+
+			lpass_dmic01_clk: dmic01-clk-state {
+				pins = "gpio6";
+				function = "dmic1_clk";
+			};
+
+			lpass_dmic01_data: dmic01-data-state {
+				pins = "gpio7";
+				function = "dmic1_data";
+			};
+
+			lpass_dmic23_clk: dmic23-clk-state {
+				pins = "gpio8";
+				function = "dmic2_clk";
+			};
+
+			lpass_dmic23_data: dmic23-data-state {
+				pins = "gpio9";
+				function = "dmic2_data";
+			};
+
+			lpass_dmic45_clk: dmic45-clk-state {
+				pins = "gpio12";
+				function = "dmic3_clk";
+			};
+
+			lpass_dmic45_data: dmic45-data-state {
+				pins = "gpio13";
+				function = "dmic3_data";
+			};
+
+			lpass_rx_swr_clk: rx-swr-clk-state {
+				pins = "gpio3";
+				function = "swr_rx_clk";
+			};
+
+			lpass_rx_swr_data: rx-swr-data-state {
+				pins = "gpio4", "gpio5";
+				function = "swr_rx_data";
+			};
+
+			lpass_tx_swr_clk: tx-swr-clk-state {
+				pins = "gpio0";
+				function = "swr_tx_clk";
+			};
+
+			lpass_tx_swr_data: tx-swr-data-state {
+				pins = "gpio1", "gpio2", "gpio14";
+				function = "swr_tx_data";
+			};
+		};
+
 		lpasscc: clock-controller@62d00000 {
 			compatible = "qcom,sc7180-lpasscorecc";
 			reg = <0 0x62d00000 0 0x50000>,
