@@ -10,6 +10,7 @@
 #include <dt-bindings/clock/qcom,gpucc-sc7180.h>
 #include <dt-bindings/clock/qcom,lpasscorecc-sc7180.h>
 #include <dt-bindings/clock/qcom,rpmh.h>
+#include <dt-bindings/clock/qcom,sm8250-lpass-aoncc.h>
 #include <dt-bindings/clock/qcom,videocc-sc7180.h>
 #include <dt-bindings/firmware/qcom,scm.h>
 #include <dt-bindings/interconnect/qcom,icc.h>
@@ -3965,6 +3966,39 @@
 					};
 				};
 			};
+		};
+
+		lpass_vamacro: codec@62770000 {
+			compatible = "qcom,sm7180-lpass-va-macro", "qcom,sm8250-lpass-va-macro";
+			reg = <0 0x62770000 0 0x1000>;
+			clocks = <&lpass_aoncc LPASS_CDC_VA_MCLK>,
+				 <&q6afecc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+
+			clock-names = "mclk",
+				      "macro",
+				      "dcodec";
+
+			#clock-cells = <0>;
+			clock-frequency = <9600000>;
+			clock-output-names = "fsgen";
+			#sound-dai-cells = <1>;
+
+			status = "disabled";
+		};
+
+		lpass_aoncc: clock-controller@62780000 {
+			compatible = "qcom,sm7180-lpass-aoncc", "qcom,sm8250-lpass-aoncc";
+			reg = <0 0x62780000 0 0x40000>;
+			#clock-cells = <1>;
+			clocks = <&q6afecc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&q6afecc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+				 <&q6afecc LPASS_CLK_ID_TX_CORE_NPL_MCLK LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+			clock-names = "core",
+				      "audio",
+				      "bus";
+
+			status = "disabled";
 		};
 
 		lpass_tlmm: pinctrl@627c0000 {
