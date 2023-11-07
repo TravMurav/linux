@@ -144,6 +144,7 @@ static int sc7180_qdsp_init(struct snd_soc_pcm_runtime *rtd)
 		return sc7180_headset_init(rtd);
 	case PRIMARY_MI2S_TX:
 	case TERTIARY_MI2S_RX:
+	case VA_CODEC_DMA_TX_0:
 		return 0;
 	case DISPLAY_PORT_RX:
 		return sc7180_hdmi_init(rtd);
@@ -275,6 +276,7 @@ static int sc7180_qdsp_snd_startup(struct snd_pcm_substream *substream)
 		snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_BP_FP);
 		break;
 	case DISPLAY_PORT_RX:
+	case VA_CODEC_DMA_TX_0:
 		break;
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
@@ -360,6 +362,7 @@ static void sc7180_qdsp_snd_shutdown(struct snd_pcm_substream *substream)
 				       SNDRV_PCM_STREAM_PLAYBACK);
 		break;
 	case DISPLAY_PORT_RX:
+	case VA_CODEC_DMA_TX_0:
 		break;
 	default:
 		dev_err(rtd->dev, "%s: invalid dai id 0x%x\n", __func__,
