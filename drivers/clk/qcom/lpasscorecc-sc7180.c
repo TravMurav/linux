@@ -296,6 +296,37 @@ static struct clk_regmap *lpass_core_cc_sc7180_clocks[] = {
 	[LPASS_LPAAUDIO_DIG_PLL_OUT_ODD] = &lpass_lpaaudio_dig_pll_out_odd.clkr,
 };
 
+static struct clk_branch lpass_q6ss_ahbm_clk = {
+	.halt_reg = 0x901c,
+	.halt_check = BRANCH_HALT,
+	.clkr = {
+		.enable_reg = 0x901c,
+		.enable_mask = BIT(0),
+		.hw.init = &(struct clk_init_data){
+				.name = "lpass_q6ss_ahbm_clk",
+				.ops = &clk_branch2_ops,
+		},
+	},
+};
+
+static struct clk_branch lpass_q6ss_ahbs_clk = {
+	.halt_reg = 0x9020,
+	.halt_check = BRANCH_HALT_VOTED,
+	.clkr = {
+		.enable_reg = 0x9020,
+		.enable_mask = BIT(0),
+		.hw.init = &(struct clk_init_data){
+			.name = "lpass_q6ss_ahbs_clk",
+			.ops = &clk_branch2_ops,
+		},
+	},
+};
+
+static struct clk_regmap *lpass_audio_hm_sc7180_clocks[] = {
+	[LPASS_Q6SS_AHBM_CLK] = &lpass_q6ss_ahbm_clk.clkr,
+	[LPASS_Q6SS_AHBS_CLK] = &lpass_q6ss_ahbs_clk.clkr,
+};
+
 static struct gdsc lpass_pdc_hm_gdsc = {
 	.gdscr = 0x3090,
 	.pd = {
@@ -352,6 +383,8 @@ static const struct qcom_cc_desc lpass_core_cc_sc7180_desc = {
 
 static const struct qcom_cc_desc lpass_audio_hm_sc7180_desc = {
 	.config = &lpass_core_cc_sc7180_regmap_config,
+	.clks = lpass_audio_hm_sc7180_clocks,
+	.num_clks = ARRAY_SIZE(lpass_audio_hm_sc7180_clocks),
 	.gdscs = lpass_audio_hm_sc7180_gdscs,
 	.num_gdscs = ARRAY_SIZE(lpass_audio_hm_sc7180_gdscs),
 };
@@ -391,7 +424,7 @@ static int lpass_core_cc_sc7180_probe(struct platform_device *pdev)
 	lpass_core_cc_sc7180_regmap_config.name = "lpass_audio_cc";
 	desc = &lpass_audio_hm_sc7180_desc;
 	ret = qcom_cc_probe_by_index(pdev, 1, desc);
-	if (ret)
+	//if (ret)
 		goto exit;
 
 	lpass_core_cc_sc7180_regmap_config.name = "lpass_core_cc";
