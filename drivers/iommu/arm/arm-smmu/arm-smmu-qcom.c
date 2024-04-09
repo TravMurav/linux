@@ -316,10 +316,12 @@ static int qcom_smmu_cfg_probe(struct arm_smmu_device *smmu)
 		arm_smmu_gr1_write(smmu, ARM_SMMU_GR1_CBAR(qsmmu->bypass_cbndx), reg);
 	}
 
+	dev_notice(smmu->dev, "\tPreserved SMMU mappings:\n");
+
 	for (i = 0; i < smmu->num_mapping_groups; i++) {
 		smr = arm_smmu_gr0_read(smmu, ARM_SMMU_GR0_SMR(i));
 
-		if (FIELD_GET(ARM_SMMU_SMR_VALID, smr)) {
+		if (FIELD_GET(ARM_SMMU_SMR_VALID, smr) /*&& FIELD_GET(ARM_SMMU_SMR_ID, smr) == 0x0800*/) {
 			/* Ignore valid bit for SMR mask extraction. */
 			smr &= ~ARM_SMMU_SMR_VALID;
 			smmu->smrs[i].id = FIELD_GET(ARM_SMMU_SMR_ID, smr);
@@ -329,6 +331,8 @@ static int qcom_smmu_cfg_probe(struct arm_smmu_device *smmu)
 			smmu->s2crs[i].type = S2CR_TYPE_BYPASS;
 			smmu->s2crs[i].privcfg = S2CR_PRIVCFG_DEFAULT;
 			smmu->s2crs[i].cbndx = 0xff;
+
+			dev_notice(smmu->dev, "\t - [0x%04x 0x%04x]\n", smmu->smrs[i].id, smmu->smrs[i].mask);
 		}
 	}
 
