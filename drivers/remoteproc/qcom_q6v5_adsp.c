@@ -408,6 +408,9 @@ static int adsp_start(struct rproc *rproc)
 		goto disable_power_domain;
 	}
 
+	val = readl(adsp->qdsp6ss_base + 0x18);
+	dev_warn(adsp->dev, "adsp[0x18] = 0x%x\n", val);
+
 	/* Enable the XO clock */
 	writel(1, adsp->qdsp6ss_base + QDSP6SS_XO_CBCR);
 
@@ -793,6 +796,25 @@ static const struct adsp_pil_data adsp_resource_init = {
 	},
 };
 
+static const struct adsp_pil_data adsp_sc7180_resource_init = {
+	.crash_reason_smem = 423,
+	.firmware_name = "adsp.mdt",
+	.load_state = "adsp",
+	.ssr_name = "lpass",
+	.sysmon_name = "adsp",
+	.ssctl_id = 0x14,
+	.has_iommu = false, // FIXME
+	.auto_boot = true,
+	.clk_ids = (const char*[]) {
+		"sway_cbcr", "lpass_ahbs_aon_cbcr", "lpass_ahbm_aon_cbcr", NULL
+	},
+	.num_clks = 3,
+	.proxy_pd_names = (const char*[]) {
+		"lcx", "lmx", "lpass_pdc_hm_gdsc", NULL
+	},
+};
+
+
 static const struct adsp_pil_data adsp_sc7280_resource_init = {
 	.crash_reason_smem = 423,
 	.firmware_name = "adsp.pbn",
@@ -846,6 +868,7 @@ static const struct adsp_pil_data wpss_resource_init = {
 
 static const struct of_device_id adsp_of_match[] = {
 	{ .compatible = "qcom,qcs404-cdsp-pil", .data = &cdsp_resource_init },
+	{ .compatible = "qcom,sc7180-adsp-pil", .data = &adsp_sc7180_resource_init },
 	{ .compatible = "qcom,sc7280-adsp-pil", .data = &adsp_sc7280_resource_init },
 	{ .compatible = "qcom,sc7280-wpss-pil", .data = &wpss_resource_init },
 	{ .compatible = "qcom,sdm845-adsp-pil", .data = &adsp_resource_init },
