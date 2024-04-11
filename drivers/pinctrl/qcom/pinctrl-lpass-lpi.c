@@ -528,5 +528,23 @@ void lpi_pinctrl_remove(struct platform_device *pdev)
 }
 EXPORT_SYMBOL_GPL(lpi_pinctrl_remove);
 
+int lpi_pinctrl_suspend(struct device *dev)
+{
+	struct lpi_pinctrl *pctrl = dev_get_drvdata(dev);
+
+	clk_bulk_disable_unprepare(MAX_LPI_NUM_CLKS, pctrl->clks);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(lpi_pinctrl_suspend);
+
+int lpi_pinctrl_resume(struct device *dev)
+{
+	struct lpi_pinctrl *pctrl = dev_get_drvdata(dev);
+
+	return clk_bulk_prepare_enable(MAX_LPI_NUM_CLKS, pctrl->clks);
+}
+EXPORT_SYMBOL_GPL(lpi_pinctrl_resume);
+
 MODULE_DESCRIPTION("QTI LPI GPIO pin control driver");
 MODULE_LICENSE("GPL");

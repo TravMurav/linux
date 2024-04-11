@@ -7,6 +7,7 @@
 #include <linux/gpio/driver.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
+#include <linux/pm.h>
 
 #include "pinctrl-lpass-lpi.h"
 
@@ -140,10 +141,13 @@ static const struct of_device_id lpi_pinctrl_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, lpi_pinctrl_of_match);
 
+static DEFINE_SIMPLE_DEV_PM_OPS(lpi_pinctrl_pm_ops, lpi_pinctrl_suspend, lpi_pinctrl_resume);
+
 static struct platform_driver lpi_pinctrl_driver = {
 	.driver = {
 		   .name = "qcom-sc7280-lpass-lpi-pinctrl",
 		   .of_match_table = lpi_pinctrl_of_match,
+		   .pm = pm_sleep_ptr(&lpi_pinctrl_pm_ops),
 	},
 	.probe = lpi_pinctrl_probe,
 	.remove_new = lpi_pinctrl_remove,
