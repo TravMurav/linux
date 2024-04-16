@@ -13,6 +13,9 @@
 #include <linux/usb/typec_mux.h>
 #include <linux/workqueue_types.h>
 
+//FIXME
+#include "../../usb/typec/ucsi/ucsi.h"
+
 #define MILLI_TO_MICRO			1000
 
 #define ASPIRE_EC_EVENT			0x05
@@ -28,6 +31,7 @@
 #define ASPIRE_EC_EVENT_FG_STA_CHG	0xc6
 #define ASPIRE_EC_EVENT_HPD_DIS		0xa3
 #define ASPIRE_EC_EVENT_HPD_CON		0xa4
+#define ASPIRE_EC_EVENT_UCSI		0xc5
 
 #define ASPIRE_EC_FG_DYNAMIC		0x07
 #define ASPIRE_EC_FG_STATIC		0x08
@@ -36,6 +40,9 @@
 #define ASPIRE_EC_FG_FLAG_FULL		BIT(1)
 #define ASPIRE_EC_FG_FLAG_DISCHARGING	BIT(2)
 #define ASPIRE_EC_FG_FLAG_CHARGING	BIT(3)
+
+#define ASPIRE_EC_UCSI_READ		0x90
+#define ASPIRE_EC_UCSI_WRITE		0x91
 
 #define ASPIRE_EC_RAM_READ		0x20
 #define ASPIRE_EC_RAM_WRITE		0x21
@@ -63,6 +70,19 @@
 #define ASPIRE_EC_RAM_ADP		0x40
 #define ASPIRE_EC_AC_STATUS		BIT(0)
 
+struct aspire_ec_ucsi_in_data {
+	u8 msg[16];
+	u8 cci[4];
+} __packed;
+
+struct aspire_ec_ucsi_out_data {
+	u8 msg[16];
+	u8 control[8];
+} __packed;
+
+static int aspire_ec_ucsi_read(struct ucsi *ucsi, struct aspire_ec_ucsi_in_data *data, bool force);
+static int aspire_ec_ucsi_read_cci(struct ucsi *ucsi, u32 *cci);
+
 struct aspire_ec {
 	struct i2c_client *client;
 	struct power_supply *bat_psy;
@@ -72,6 +92,10 @@ struct aspire_ec {
 	bool bridge_configured;
 	struct drm_bridge bridge;
 	struct work_struct work;
+
+	struct ucsi *ucsi;
+	u64 ucsi_command;
+	struct aspire_ec_ucsi_in_data ucsi_in;
 };
 
 static int aspire_ec_ram_read(struct i2c_client *client, u8 off, u8 *data, u8 data_len)
@@ -92,6 +116,7 @@ static int aspire_ec_ram_write(struct i2c_client *client, u8 off, u8 data)
 static irqreturn_t aspire_ec_irq_handler(int irq, void *data)
 {
 	struct aspire_ec *ec = data;
+	u32 cci;
 	int id;
 	u8 tmp;
 
@@ -170,6 +195,19 @@ static irqreturn_t aspire_ec_irq_handler(int irq, void *data)
 		 * Seems like this is used on other devices like Acer Spin 7.
 		 * No action needed.
 		 */
+		break;
+
+	case ASPIRE_EC_EVENT_UCSI:
+		/* Notify (\_SB.UBTC, 0x80) // Status Change */
+		//dev_warn(&ec->client->dev, "UCSI! id=0x%x cci=0x%x\n", id, cci); // FIXME <------------------------------ delete
+		aspire_ec_ucsi_read(ec->ucsi, NULL, true);
+		aspire_ec_ucsi_read_cci(ec->ucsi, &cci);
+
+		if (UCSI_CCI_CONNECTOR(cci))
+			ucsi_connector_change(ec->ucsi, UCSI_CCI_CONNECTOR(cci));
+
+		ucsi_notify_common(ec->ucsi, cci);
+
 		break;
 
 	default:
@@ -396,6 +434,88 @@ static const struct drm_bridge_funcs aspire_ec_bridge_funcs = {
 };
 
 /*
+ * USB-C UCSI interface.
+ */
+
+static int aspire_ec_ucsi_read(struct ucsi *ucsi, struct aspire_ec_ucsi_in_data *data, bool force)
+{
+	struct aspire_ec *ec = ucsi_get_drvdata(ucsi);
+
+	/*
+	 * The RESET is polled but all other commands return an event.
+	 * If we read the CCI register twice, we will delete it's contents on second read
+	 * so we need to cache the result and only update it after getting an event.
+	 */
+	if (force || ec->ucsi_command == UCSI_PPM_RESET) {
+		//dev_warn(&ec->client->dev, "UCSI UPDATED!");
+		i2c_smbus_read_i2c_block_data(ec->client, ASPIRE_EC_UCSI_READ, sizeof(ec->ucsi_in), (u8*)&ec->ucsi_in);
+	}
+
+	if (!data)
+		return 0;
+
+	memcpy(data, &ec->ucsi_in, sizeof(*data));
+	//dev_warn(&ec->client->dev, "UCSI READ [0x%llx %llx | 0x%x]\n", ((u64*)data->msg)[0], ((u64*)data->msg)[1], *(u32*)data->cci);
+
+	return 0;
+}
+
+static int aspire_ec_ucsi_read_version(struct ucsi *ucsi, u16 *version)
+{
+	*version = UCSI_VERSION_1_2;
+	return 0;
+}
+
+static int aspire_ec_ucsi_read_in(struct ucsi *ucsi, void *val, size_t val_len)
+{
+	struct aspire_ec *ec = ucsi_get_drvdata(ucsi);
+	struct aspire_ec_ucsi_in_data data;
+	int ret;
+
+	aspire_ec_ucsi_read(ucsi, &data, false);
+	//dev_warn(&ec->client->dev, "UCSI read IN! d[%ld]\n", val_len);
+	memcpy(val, (u8*)&data.msg, val_len);
+
+	return 0;
+}
+
+static int aspire_ec_ucsi_read_cci(struct ucsi *ucsi, u32 *cci)
+{
+	struct aspire_ec *ec = ucsi_get_drvdata(ucsi);
+	struct aspire_ec_ucsi_in_data data;
+	int ret;
+
+	aspire_ec_ucsi_read(ucsi, &data, false);
+	memcpy(cci, (u8*)&data.cci, sizeof(*cci));
+	//dev_warn(&ec->client->dev, "UCSI read CCI! cci=0x%x\n", *cci);
+
+	return 0;
+}
+
+static int aspire_ec_ucsi_async_control(struct ucsi *ucsi, u64 command)
+{
+	struct aspire_ec *ec = ucsi_get_drvdata(ucsi);
+	struct aspire_ec_ucsi_out_data data = {0};
+
+	memcpy(&data.control, &command, sizeof(command));
+	ec->ucsi_command = command;
+
+	//dev_warn(&ec->client->dev, "UCSI write! cmd=0x%lx [0x%llx %llx | 0x%llx]\n", command,
+	//		((u64*)data.msg)[0], ((u64*)data.msg)[1], *(u64*)data.control);
+	i2c_smbus_write_i2c_block_data(ec->client, ASPIRE_EC_UCSI_WRITE, sizeof(data), (u8*)&data);
+
+	return 0;
+}
+
+static const struct ucsi_operations aspire_ec_ucsi_ops = {
+	.read_version = aspire_ec_ucsi_read_version,
+	.read_message_in = aspire_ec_ucsi_read_in,
+	.read_cci = aspire_ec_ucsi_read_cci,
+	.sync_control = ucsi_sync_control_common,
+	.async_control = aspire_ec_ucsi_async_control,
+};
+
+/*
  * Sysfs attributes.
  */
 
@@ -510,6 +630,19 @@ static int aspire_ec_probe(struct i2c_client *client)
 		ec->bridge_configured = true;
 	}
 
+	/* Type-C UCSI interface. */
+	ec->ucsi = ucsi_create(dev, &aspire_ec_ucsi_ops);
+	if (IS_ERR(ec->ucsi))
+		return dev_err_probe(dev, PTR_ERR(ec->ucsi), "Failed to create UCSI.\n");
+
+	ucsi_set_drvdata(ec->ucsi, ec);
+
+	ret = ucsi_register(ec->ucsi);
+	if (ret) {
+		ucsi_destroy(ec->ucsi);
+		return dev_err_probe(dev, ret, "Failed to register UCSI.\n");
+	}
+
 	ret = devm_request_threaded_irq(dev, client->irq, NULL,
 					aspire_ec_irq_handler, IRQF_ONESHOT,
 					dev_name(dev), ec);
@@ -517,6 +650,14 @@ static int aspire_ec_probe(struct i2c_client *client)
 		return dev_err_probe(dev, ret, "Failed to request irq\n");
 
 	return 0;
+}
+
+static void aspire_ec_remove(struct i2c_client *client)
+{
+	struct aspire_ec *ec = i2c_get_clientdata(client);
+
+	ucsi_unregister(ec->ucsi);
+	ucsi_destroy(ec->ucsi);
 }
 
 static int aspire_ec_resume(struct device *dev)
@@ -553,6 +694,7 @@ static struct i2c_driver aspire_ec_driver = {
 		.dev_groups = aspire_ec_groups,
 	},
 	.probe = aspire_ec_probe,
+	.remove = aspire_ec_remove,
 	.id_table = aspire_ec_id,
 };
 module_i2c_driver(aspire_ec_driver);
