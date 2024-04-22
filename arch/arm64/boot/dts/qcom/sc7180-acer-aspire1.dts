@@ -138,9 +138,7 @@
 
 		audio-routing =
 			"Headphone Jack", "HPOL",
-			"Headphone Jack", "HPOR",
-			"VA DMIC5", "vdd-micb",
-			"VA DMIC6", "vdd-micb";
+			"Headphone Jack", "HPOR";
 
 		multimedia1-dai-link {
 			link-name = "MultiMedia1";
@@ -171,14 +169,6 @@
 
 			cpu {
 				sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA4>;
-			};
-		};
-
-		multimedia5-dai-link {
-			link-name = "MultiMedia5";
-
-			cpu {
-				sound-dai = <&q6asmdai MSM_FRONTEND_DAI_MULTIMEDIA5>;
 			};
 		};
 
@@ -243,22 +233,6 @@
 
 			codec {
 				sound-dai = <&mdss_dp>;
-			};
-		};
-
-		va-dai-link {
-			link-name = "VA Capture";
-
-			cpu {
-				sound-dai = <&q6afedai VA_CODEC_DMA_TX_0>;
-			};
-
-			platform {
-				sound-dai = <&q6routing>;
-			};
-
-			codec {
-				sound-dai = <&lpass_vamacro 0>;
 			};
 		};
 	};
@@ -459,25 +433,6 @@
 	};
 };
 
-&lpass_aoncc {
-	status = "okay";
-};
-
-&lpass_tlmm {
-	status = "okay";
-};
-
-&lpass_vamacro {
-	status = "okay";
-
-	pinctrl-0 = <&lpass_dmic45_clk>, <&lpass_dmic45_data>;
-	pinctrl-names = "default";
-
-	vdd-micb-supply = <&vreg_l10a_1p8>;
-
-	qcom,dmic-sample-rate = <600000>;
-};
-
 &mdss {
 	status = "okay";
 };
@@ -571,10 +526,6 @@
 	dai@104 {
 		reg = <DISPLAY_PORT_RX>;
 	};
-
-	dai@110 {
-		reg = <VA_CODEC_DMA_TX_0>;
-	};
 };
 
 &q6asmdai {
@@ -592,10 +543,6 @@
 
 	dai@3 {
 		reg = <3>;
-	};
-
-	dai@4 {
-		reg = <4>;
 	};
 };
 
