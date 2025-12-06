@@ -340,8 +340,8 @@ static int qcom_pcie_stop_link(struct dw_pcie *pci)
 	struct qcom_pcie *pcie = to_qcom_pcie(pci);
 	u32 ret_l23, val;
 
-	writel(ELBI_SYS_CTRL_PME_TURNOFF_MSG, pcie->elbi + ELBI_SYS_CTRL);
-	readl(pcie->elbi + ELBI_SYS_CTRL);
+	writel(ELBI_SYS_CTRL_PME_TURNOFF_MSG, pci->elbi_base + ELBI_SYS_CTRL);
+	readl(pci->elbi_base + ELBI_SYS_CTRL);
 
 	ret_l23 = readl_poll_timeout(pcie->parf + PARF_PM_STTS, val,
 			val & PM_ENTER_L23, 10000, 100000);
